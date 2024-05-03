@@ -1,0 +1,49 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://res/sprite/spark.png" type="Texture" id=1]
+[ext_resource path="res://res/sprite/angel.png" type="Texture" id=2]
+[ext_resource path="res://scene/SparkParticles.tscn" type="PackedScene" id=3]
+
+[sub_resource type="Curve" id=9]
+min_value = -200.0
+max_value = 200.0
+_data = [ Vector2( 0.0108696, 167.913 ), 0.0, -669.091, 0, 0, Vector2( 1, 1 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=10]
+curve = SubResource( 9 )
+
+[sub_resource type="Curve" id=11]
+_data = [ Vector2( 0, 1 ), 0.0, 0.0120656, 0, 0, Vector2( 1, 0.129043 ), 0.0, 0.0, 0, 0 ]
+
+[sub_resource type="CurveTexture" id=12]
+curve = SubResource( 11 )
+
+[sub_resource type="ParticlesMaterial" id=8]
+trail_divisor = 50
+flag_disable_z = true
+spread = 0.0
+gravity = Vector3( 0, 0, 0 )
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+radial_accel = 5.88
+radial_accel_curve = SubResource( 10 )
+damping = 35.29
+scale = 0.5
+scale_curve = SubResource( 12 )
+
+[node name="Angel" type="Node2D"]
+
+[node name="SparkParticles" parent="." instance=ExtResource( 3 )]
+
+[node name="Sprite" type="Sprite" parent="."]
+scale = Vector2( 0.5, 0.5 )
+texture = ExtResource( 2 )
+region_rect = Rect2( 0, 0, 214, 130 )
+
+[node name="TrailParticles" type="Particles2D" parent="."]
+amount = 5000
+lifetime = 0.5
+explosiveness = 0.2
+local_coords = false
+process_material = SubResource( 8 )
+texture = ExtResource( 1 )

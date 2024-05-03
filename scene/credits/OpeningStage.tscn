@@ -1,0 +1,174 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://res/credits/ui/hama_industries_nologo_white.png" type="Texture" id=1]
+[ext_resource path="res://res/credits/ui/Nulb_act_1.png" type="Texture" id=2]
+[ext_resource path="res://res/credits/ui/hama_industries_logo_white.png" type="Texture" id=3]
+[ext_resource path="res://res/shaders/screen_tangent.gdshader" type="Shader" id=4]
+[ext_resource path="res://scene/credits/OpeningStage.gd" type="Script" id=5]
+[ext_resource path="res://res/credits/audio/hama_logo_tone.mp3" type="AudioStream" id=6]
+[ext_resource path="res://res/credits/audio/hama_logo_static.mp3" type="AudioStream" id=7]
+
+[sub_resource type="Shader" id=4]
+code = "shader_type canvas_item;
+render_mode blend_add;
+
+float random (vec2 uv) {
+    return fract(sin(dot(uv.xy,
+        vec2(12.9898,78.233))) * 43758.5453123);
+}
+
+void fragment() {
+	
+	float wave = (sin(TIME*6.0 - UV.y*600.0)+1.0)/2.0;
+	COLOR = vec4(-1.0);
+	COLOR.a = wave*0.3 + random(UV + TIME/5.0) * 0.15;
+	//COLOR.r -= 1.0 - ( (1.0-UV.x) *2.0);
+	//COLOR.b -= 1.0 - ( (UV.x)*2.0 );
+}"
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 4 )
+
+[sub_resource type="Animation" id=1]
+resource_name = "logo"
+length = 7.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("logo:rotation_degrees")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ 90.0, 185.3 ]
+}
+tracks/1/type = "audio"
+tracks/1/path = NodePath("AudioStreamPlayer")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"clips": [ {
+"end_offset": 2.03051,
+"start_offset": 1.0,
+"stream": ExtResource( 6 )
+}, {
+"end_offset": 0.276291,
+"start_offset": 0.9,
+"stream": ExtResource( 7 )
+}, {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": null
+} ],
+"times": PoolRealArray( 0, 1.6, 2 )
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath(".:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 1.7 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/3/type = "bezier"
+tracks/3/path = NodePath("../NulaLogo:material:shader_param/visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0, 3.1, 5.2, 7 )
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("../NulaLogo:modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0, 2.1, 3.1, 6.5, 7 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/5/type = "method"
+tracks/5/path = NodePath("..")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 2, 7.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"values": [ {
+"args": [ "hide_effects" ],
+"method": "emit_signal"
+}, {
+"args": [ "show_effects" ],
+"method": "emit_signal"
+} ]
+}
+
+[sub_resource type="ShaderMaterial" id=3]
+render_priority = 1
+shader = ExtResource( 4 )
+shader_param/visible = 0.0
+
+[node name="OpeningStage" type="Node2D"]
+script = ExtResource( 5 )
+__meta__ = {
+"_edit_horizontal_guides_": [ 135.188 ],
+"_edit_vertical_guides_": [ 240.02 ]
+}
+
+[node name="Background" type="ColorRect" parent="."]
+margin_right = 400.0
+margin_bottom = 304.0
+color = Color( 0, 0, 0, 1 )
+
+[node name="HamaIndustries" type="Node2D" parent="."]
+position = Vector2( 202.087, 155 )
+scale = Vector2( 1.5, 1.5 )
+
+[node name="text" type="Sprite" parent="HamaIndustries"]
+use_parent_material = true
+scale = Vector2( 0.137111, 0.137111 )
+texture = ExtResource( 1 )
+
+[node name="logo" type="Sprite" parent="HamaIndustries"]
+use_parent_material = true
+position = Vector2( -81.2052, -10.633 )
+rotation = 1.5708
+scale = Vector2( 0.137285, 0.137285 )
+texture = ExtResource( 3 )
+
+[node name="ColorRect" type="ColorRect" parent="HamaIndustries"]
+material = SubResource( 5 )
+margin_left = -135.0
+margin_top = -103.0
+margin_right = 132.0
+margin_bottom = 100.0
+color = Color( 1, 1, 1, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="HamaIndustries"]
+anims/logo = SubResource( 1 )
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="HamaIndustries"]
+stream = ExtResource( 7 )
+volume_db = -18.71
+
+[node name="NulaLogo" type="Sprite" parent="."]
+modulate = Color( 1, 1, 1, 0 )
+material = SubResource( 3 )
+position = Vector2( 204, 154 )
+scale = Vector2( 0.35, 0.35 )
+texture = ExtResource( 2 )

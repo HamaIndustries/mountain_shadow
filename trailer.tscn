@@ -1,0 +1,592 @@
+[gd_scene load_steps=23 format=2]
+
+[ext_resource path="res://res/credits/ui/angel_hd.png" type="Texture" id=1]
+[ext_resource path="res://res/shaders/screen.gdshader" type="Shader" id=2]
+[ext_resource path="res://trailer.gd" type="Script" id=3]
+[ext_resource path="res://res/credits/ui/Nulb_act_1.png" type="Texture" id=4]
+[ext_resource path="res://res/credits/ui/hama_industries_white.png" type="Texture" id=5]
+[ext_resource path="res://res/credits/audio/Tempered_Brilliance_trailer_edit.wav" type="AudioStream" id=6]
+[ext_resource path="res://res/font/MorePerfectDosVGA_Free.tres" type="DynamicFont" id=7]
+[ext_resource path="res://res/credits/ui/website_lol_swag.png" type="Texture" id=8]
+[ext_resource path="res://res/font/More Perfect DOS VGA.ttf" type="DynamicFontData" id=9]
+[ext_resource path="res://res/sprite/Sky_Core.png" type="Texture" id=10]
+
+[sub_resource type="Shader" id=30]
+code = "shader_type canvas_item;
+
+uniform float ratio = 0f;
+uniform float noise = 0f;
+
+float random (vec2 uv) {
+    return fract(sin(dot(uv.xy,
+        vec2(12.9898,78.233))) * 43758.5453123);
+}
+
+vec2 rvec(vec2 uv){
+    uv = vec2( dot(uv, vec2(127.1,311.7) ),
+               dot(uv, vec2(269.5,183.3) ) );
+    return -1.0 + 2.0 * fract(sin(uv) * 43758.5453123);
+}
+
+//  Function from Iñigo Quiles
+//  www.iquilezles.org/www/articles/functions/functions.htm
+float pcurve( float x, float a, float b ){
+    float k = pow(a+b,a+b) / (pow(a,a)*pow(b,b));
+    return k * pow( x, a ) * pow( 1.0-x, b );
+}
+
+float perlin_noise(vec2 uv) {
+    vec2 uv_index = floor(uv);
+    vec2 uv_fract = fract(uv);
+
+    vec2 blur = smoothstep(0.0, 1.0, uv_fract);
+	//vec2 blur = vec2(pcurve(uv_fract.x, 1.0, 0.0), pcurve(uv_fract.y, 1.0, 0.0));
+
+    return mix( mix( dot( rvec(uv_index + vec2(0.0,0.0) ), uv_fract - vec2(0.0,0.0) ),
+                     dot( rvec(uv_index + vec2(1.0,0.0) ), uv_fract - vec2(1.0,0.0) ), blur.x),
+                mix( dot( rvec(uv_index + vec2(0.0,1.0) ), uv_fract - vec2(0.0,1.0) ),
+                     dot( rvec(uv_index + vec2(1.0,1.0) ), uv_fract - vec2(1.0,1.0) ), blur.x), blur.y) + 0.5;
+}
+
+void fragment() {
+	float r = sqrt(perlin_noise(UV*10f));//,10) / random(UV);
+	COLOR = clamp(texture(TEXTURE, UV) + noise*r, 0f, 1f);
+	float w = (COLOR.r + COLOR.g + COLOR.b)/3f ;
+	COLOR.rgb = vec3(1f-smoothstep(w, ratio, 1f));
+	
+	
+	/*
+	float r = sqrt(perlin_noise(UV*10f));//,10) / random(UV);
+	COLOR = clamp(texture(TEXTURE, UV) + noise*r, 0f, 1f);
+	float w = (COLOR.r + COLOR.g + COLOR.b)/3f ;
+	COLOR.rgb = vec3(1f-smoothstep(w, ratio, 1f));
+	*/
+	
+	
+	
+}"
+
+[sub_resource type="ShaderMaterial" id=31]
+shader = SubResource( 30 )
+shader_param/ratio = 0.0
+shader_param/noise = 0.0
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform float ratio = 0f;
+uniform float noise = 0f;
+
+void fragment() {
+	COLOR = texture(TEXTURE, UV);
+	//COLOR = vec4(1);
+	float rate = TIME*0.5f;
+	float w = (COLOR.r + COLOR.g + COLOR.b)/3f;
+	COLOR.rgb = vec3(1f-smoothstep(w, ratio, 1f));
+	//COLOR.rgb = vec3(1f-smoothstep(w, (sin(rate)+1f)/2f, 1f));
+	
+	
+	
+}"
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/ratio = 1.0
+shader_param/noise = 0.0
+
+[sub_resource type="Shader" id=27]
+code = "shader_type canvas_item;
+
+float sharp(float v, float stp) {
+	return floor(v/stp)*stp;
+}
+
+void fragment() {
+	COLOR = texture(TEXTURE, UV);
+	COLOR.a = mix(3f-UV.y, 0.0f, UV.y);
+	//COLOR.a = sharp(mix(3f-UV.y, 0.0f, UV.y), 0.2f);
+	
+}"
+
+[sub_resource type="ShaderMaterial" id=28]
+shader = SubResource( 27 )
+
+[sub_resource type="DynamicFont" id=29]
+size = 25
+font_data = ExtResource( 9 )
+
+[sub_resource type="ShaderMaterial" id=21]
+shader = ExtResource( 2 )
+shader_param/scan_rate = 0.0
+
+[sub_resource type="Shader" id=20]
+code = "shader_type canvas_item;
+
+render_mode blend_add;
+
+uniform float glow = 1.0;
+
+float sum_color(vec4 c) {
+	return (c.r+c.g+c.b)/3.0f;
+}
+
+void fragment() {
+	vec3 col = vec3(0.0);
+    col.r += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(SCREEN_PIXEL_SIZE.x, 0.0)).r * 0.15 * glow;
+	col.g += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(SCREEN_PIXEL_SIZE.y, 0.0)).g * 0.35 * glow;
+	col.g += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(-SCREEN_PIXEL_SIZE.y, 0.0)).g * 0.35 * glow;
+    col.b += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(-SCREEN_PIXEL_SIZE.x, 0.0)).b * 0.15 * glow;
+    col.r += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(2.0 * SCREEN_PIXEL_SIZE.x, 0.0)).r * 0.12 * glow;
+    col.b += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(2.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).b * 0.12 * glow;
+    col.r += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(3.0 * SCREEN_PIXEL_SIZE.x, 0.0)).r * 0.09 * glow;
+    col.b += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(3.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).b * 0.09 * glow;
+    col.r += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(4.0 * SCREEN_PIXEL_SIZE.x, 0.0)).r * 0.05 * glow;
+    col.b += texture(SCREEN_TEXTURE, SCREEN_UV + vec2(4.0 * -SCREEN_PIXEL_SIZE.x, 0.0)).b * 0.05 * glow;
+    COLOR.xyz = col;
+}"
+
+[sub_resource type="ShaderMaterial" id=22]
+shader = SubResource( 20 )
+shader_param/glow = 1.7
+
+[sub_resource type="Animation" id=23]
+resource_name = "RESET"
+tracks/0/type = "value"
+tracks/0/path = NodePath("AudioStreamPlayer:playing")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ false ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("CanvasLayer5/HamaIndustriesWhite:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0.1 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ false ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("CanvasLayer5/NulaLogo:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ false ]
+}
+tracks/3/type = "bezier"
+tracks/3/path = NodePath("CanvasLayer5/SkyCore:material:shader_param/ratio")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"points": PoolRealArray( 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("CanvasLayer5/Date:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath("CanvasLayer2/WebsiteLolSwag:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/6/type = "value"
+tracks/6/path = NodePath("CanvasLayer5/Contact:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ false ]
+}
+tracks/7/type = "bezier"
+tracks/7/path = NodePath("CanvasLayer5/SkyCoreAlt:material:shader_param/ratio")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+tracks/8/type = "bezier"
+tracks/8/path = NodePath("CanvasLayer5/SkyCoreAlt:material:shader_param/noise")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 0 )
+}
+
+[sub_resource type="Animation" id=24]
+resource_name = "trailer"
+length = 60.0
+tracks/0/type = "audio"
+tracks/0/path = NodePath("AudioStreamPlayer")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"clips": [ {
+"end_offset": 0.0,
+"start_offset": 0.0,
+"stream": ExtResource( 6 )
+} ],
+"times": PoolRealArray( 0 )
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("CanvasLayer5/HamaIndustriesWhite:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1.8 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("CanvasLayer5/HamaIndustriesWhite:modulate")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0.8, 3, 4.6 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath("CanvasLayer5/NulaLogo:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/keys = {
+"times": PoolRealArray( 2.2, 10.2, 11.6 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ) ]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath("CanvasLayer5/NulaLogo:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/keys = {
+"times": PoolRealArray( 0, 9.1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath("CanvasLayer5/Wipe:rect_size")
+tracks/5/interp = 2
+tracks/5/loop_wrap = true
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/keys = {
+"times": PoolRealArray( 0, 18.3, 29 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 441, 42 ), Vector2( 441, 42 ), Vector2( 441, 600 ) ]
+}
+tracks/6/type = "value"
+tracks/6/path = NodePath("CanvasLayer5/Wipe:visible")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/keys = {
+"times": PoolRealArray( 0, 30.4 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ true, false ]
+}
+tracks/7/type = "bezier"
+tracks/7/path = NodePath("CanvasLayer5/SkyCore:material:shader_param/ratio")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/keys = {
+"points": PoolRealArray( 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0 ),
+"times": PoolRealArray( 29.8, 30.7, 37.9 )
+}
+tracks/8/type = "value"
+tracks/8/path = NodePath("CanvasLayer5/SkyCore:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/keys = {
+"times": PoolRealArray( 0, 29.8 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/9/type = "value"
+tracks/9/path = NodePath("CanvasLayer5/Date:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/keys = {
+"times": PoolRealArray( 0, 38.2, 45 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ false, true, false ]
+}
+tracks/10/type = "value"
+tracks/10/path = NodePath("CanvasLayer2/WebsiteLolSwag:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/keys = {
+"times": PoolRealArray( 0, 45.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/11/type = "value"
+tracks/11/path = NodePath("CanvasLayer5/Contact:visible")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/keys = {
+"times": PoolRealArray( 0, 45.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, true ]
+}
+tracks/12/type = "value"
+tracks/12/path = NodePath("CanvasLayer5/SkyCoreAlt:material:shader_param/ratio")
+tracks/12/interp = 2
+tracks/12/loop_wrap = true
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/keys = {
+"times": PoolRealArray( 29.8, 30.8, 37.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ 0.0, 0.0, 1.0 ]
+}
+tracks/13/type = "value"
+tracks/13/path = NodePath("CanvasLayer5/SkyCoreAlt:visible")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/keys = {
+"times": PoolRealArray( 0, 29.8 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 1,
+"values": [ false, false ]
+}
+tracks/14/type = "value"
+tracks/14/path = NodePath("CanvasLayer5/SkyCoreAlt:material:shader_param/noise")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/keys = {
+"times": PoolRealArray( 30.2, 31.5, 32.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ 1.0, 1.0, 0.0 ]
+}
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource( 3 )
+
+[node name="CanvasLayer4" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer4"]
+margin_right = 404.0
+margin_bottom = 303.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CanvasLayer5" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="SkyCoreAlt" type="Sprite" parent="CanvasLayer5"]
+visible = false
+material = SubResource( 31 )
+position = Vector2( 200, 150 )
+scale = Vector2( 0.150721, 0.150721 )
+texture = ExtResource( 1 )
+
+[node name="SkyCore" type="Sprite" parent="CanvasLayer5"]
+material = SubResource( 2 )
+position = Vector2( 200, 150 )
+scale = Vector2( 0.138442, 0.138442 )
+texture = ExtResource( 10 )
+
+[node name="Backup" type="ColorRect" parent="CanvasLayer5/SkyCore"]
+show_behind_parent = true
+use_parent_material = true
+margin_left = -1445.0
+margin_top = -1083.0
+margin_right = 1480.0
+margin_bottom = 1120.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NulaLogo" type="Sprite" parent="CanvasLayer5"]
+visible = false
+modulate = Color( 1, 1, 1, 0 )
+position = Vector2( 200, 150 )
+scale = Vector2( 0.268122, 0.268122 )
+texture = ExtResource( 4 )
+
+[node name="HamaIndustriesWhite" type="Sprite" parent="CanvasLayer5"]
+visible = false
+modulate = Color( 1, 1, 1, 0 )
+position = Vector2( 200, 150 )
+scale = Vector2( 0.151265, 0.151265 )
+texture = ExtResource( 5 )
+
+[node name="Wipe" type="ColorRect" parent="CanvasLayer5"]
+visible = false
+material = SubResource( 28 )
+margin_left = -20.0
+margin_top = -51.0
+margin_right = 421.0
+margin_bottom = 549.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Date" type="RichTextLabel" parent="CanvasLayer5"]
+visible = false
+margin_left = 128.0
+margin_top = 112.0
+margin_right = 268.0
+margin_bottom = 213.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_fonts/normal_font = ExtResource( 7 )
+bbcode_enabled = true
+bbcode_text = "[center]24
+4
+29"
+meta_underlined = false
+text = "24
+4
+29"
+scroll_active = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Contact" type="RichTextLabel" parent="CanvasLayer5"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 72.0
+margin_top = 66.0
+margin_right = -77.0
+margin_bottom = -185.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_fonts/normal_font = SubResource( 29 )
+bbcode_enabled = true
+bbcode_text = "[center]www.nulb.co.uk"
+meta_underlined = false
+text = "www.nulb.co.uk"
+scroll_active = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+material = SubResource( 21 )
+margin_right = 403.0
+margin_bottom = 302.0
+
+[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+
+[node name="shape" type="ColorRect" parent="CanvasLayer2"]
+visible = false
+margin_left = 62.0
+margin_top = 11.0
+margin_right = 338.0
+margin_bottom = 287.0
+color = Color( 1, 0, 0, 0.309804 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer2"]
+material = SubResource( 22 )
+margin_right = 403.0
+margin_bottom = 304.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="WebsiteLolSwag" type="Sprite" parent="CanvasLayer2"]
+visible = false
+position = Vector2( 200, 179 )
+scale = Vector2( 0.44, 0.44 )
+texture = ExtResource( 8 )
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 6 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+anims/RESET = SubResource( 23 )
+anims/trailer = SubResource( 24 )

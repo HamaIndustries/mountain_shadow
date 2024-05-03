@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/it was as though the sky's very core had shattered - nulb Mastered.wav-8bd088957b3c8f1fa8901637c5d80133.sample"
+
+[deps]
+
+source_file="res://res/music/it was as though the sky's very core had shattered - nulb Mastered.wav"
+dest_files=[ "res://.import/it was as though the sky's very core had shattered - nulb Mastered.wav-8bd088957b3c8f1fa8901637c5d80133.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

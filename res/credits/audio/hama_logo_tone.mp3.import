@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/hama_logo_tone.mp3-582df820d9c4d8c7eaa789c5c5810776.mp3str"
+
+[deps]
+
+source_file="res://res/credits/audio/hama_logo_tone.mp3"
+dest_files=[ "res://.import/hama_logo_tone.mp3-582df820d9c4d8c7eaa789c5c5810776.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0
